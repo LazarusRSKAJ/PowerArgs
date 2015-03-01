@@ -50,7 +50,7 @@ namespace PowerArgs
         {
             if (value.Contains(","))
             {
-                int ret = 0;
+                long ret = 0;
                 var values = value.Split(',').Select(v => v.Trim());
                 foreach (var enumValue in values)
                 {
@@ -82,22 +82,27 @@ namespace PowerArgs
             }
         }
 
-        private static int ParseEnumValue(Type t, string valueString, bool ignoreCase)
+        private static long ParseEnumValue(Type t, string valueString, bool ignoreCase)
         {
-            int rawInt;
+            long rawValue;
+            object enumMatch = null;
 
-            if (int.TryParse(valueString, out rawInt))
+            if (long.TryParse(valueString, out rawValue))
             {
-                return (int)Enum.ToObject(t, rawInt);
+                enumMatch = Enum.ToObject(t, rawValue);
+            }
+            else
+            {
+                t.TryMatchEnumShortcut(valueString, ignoreCase, out enumMatch);
+
+                if (enumMatch == null)
+                {
+                    enumMatch = Enum.Parse(t, valueString, ignoreCase);
+                }
             }
 
-            object enumShortcutMatch;
-            if (t.TryMatchEnumShortcut(valueString, ignoreCase, out enumShortcutMatch))
-            {
-                return (int)enumShortcutMatch;
-            }
-
-            return (int)Enum.Parse(t, valueString, ignoreCase);
+            Debug.Assert(enumMatch != null);
+            return (long)Convert.ChangeType(enumMatch, typeof(long));
         }
 
         /// <summary>

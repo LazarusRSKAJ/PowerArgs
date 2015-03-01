@@ -18,8 +18,9 @@ namespace PowerArgs
             return ret;
         }
 
-        internal static bool TryMatchEnumShortcut(this Type enumType, string value, bool ignoreCase, out object enumResult)
+        internal static void TryMatchEnumShortcut(this Type enumType, string value, bool ignoreCase, out object enumResult)
         {
+            enumResult = null;
             if (ignoreCase) value = value.ToLower();
             foreach (var field in enumType.GetFields().Where(f => f.IsSpecialName == false))
             {
@@ -29,12 +30,8 @@ namespace PowerArgs
                 if (match != null)
                 {
                     enumResult = Enum.Parse(enumType, field.Name);
-                    return true;
                 }
             }
-
-            enumResult = null;
-            return false;
         }
 
         internal static void ValidateNoDuplicateEnumShortcuts(this Type enumType, bool ignoreCase)
